@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hello Device · what your browser can silently do</title>
+<meta name="description" content="A first-contact handshake between this page and every capability your browser silently offers. Nothing leaves your device.">
+<meta name="author" content="AI-Native Solutions">
+<meta name="theme-color" content="#1a1a1e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231a1a1e'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='22' fill='%237a9c7e' text-anchor='middle'%3E%E2%97%8B%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --void:#1a1a1e; --deep:#212127; --surface:#2a2a30; --raised:#33333a;
+  --line:rgba(232,228,219,0.08); --line2:rgba(232,228,219,0.16);
+  --text:#e8e4db; --muted:#928d80; --dim:#6b6660;
+  --sage:#7a9c7e; --sage-dim:rgba(122,156,126,0.14);
+  --amber:#d4a052; --amber-dim:rgba(212,160,82,0.12);
+  --coral:#d67a5a;
+  --serif:'Cormorant Garamond','Iowan Old Style',Georgia,serif;
+  --sans:'Inter',-apple-system,system-ui,sans-serif;
+  --mono:'JetBrains Mono','IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--void);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;background:transparent;color:inherit}
+h1,h2,h3{font-family:var(--serif);font-weight:400;color:var(--text);line-height:1.15}
+h1{font-size:42px;letter-spacing:0.005em;margin-bottom:6px}
+h1 em{color:var(--sage);font-style:italic}
+h2{font-size:22px;color:var(--text);margin-bottom:8px}
+h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.16em;font-family:var(--mono);font-weight:500}
+a{color:var(--sage);text-decoration:none;border-bottom:1px solid rgba(122,156,126,0.3)}
+a:hover{border-bottom-color:var(--sage)}
+
+.topbar{
+  background:rgba(26,26,30,0.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:16px 24px;display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:50;gap:16px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:10px;font-family:var(--serif);font-size:22px;color:var(--text)}
+.brand .glyph{color:var(--sage);font-size:22px}
+.brand .co{color:var(--dim);font-family:var(--mono);font-size:9.5px;letter-spacing:0.16em;margin-left:6px;text-transform:uppercase}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{background:transparent;color:var(--text);border:1px solid var(--line2);padding:9px 16px;border-radius:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;transition:all .15s}
+.btn:hover{border-color:var(--sage);color:var(--sage)}
+.btn.primary{background:var(--sage);color:var(--void);border-color:var(--sage);font-weight:600}
+.btn.primary:hover{background:#8db091;color:var(--void)}
+
+main{max-width:1200px;margin:0 auto;padding:32px 24px 80px;width:100%}
+
+.intro{margin-bottom:36px;max-width:720px}
+.intro p{color:var(--muted);font-size:16px;margin-top:12px;line-height:1.7}
+.intro .lede{font-family:var(--serif);font-size:22px;font-style:italic;color:var(--text);line-height:1.5}
+
+.summary{
+  background:var(--deep);border:1px solid var(--line2);border-radius:14px;
+  padding:22px 26px;margin-bottom:32px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;
+}
+@media(max-width:640px){.summary{grid-template-columns:1fr;text-align:center}}
+.summary .big{font-family:var(--serif);font-size:56px;font-style:italic;color:var(--sage);line-height:1;font-weight:400}
+.summary .big .of{color:var(--muted);font-size:28px;font-style:normal;font-family:var(--mono);margin:0 8px}
+.summary .big .tot{color:var(--muted);font-size:28px;font-style:italic}
+.summary .desc h3{margin-bottom:6px}
+.summary .desc p{color:var(--text);font-size:15px}
+.summary .bar-wrap{grid-column:1 / -1;height:6px;background:var(--surface);border-radius:3px;overflow:hidden;margin-top:4px}
+.summary .bar{height:100%;background:linear-gradient(90deg,var(--sage),var(--amber));width:0%;transition:width 0.8s ease}
+.summary .filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chip{padding:6px 12px;border-radius:14px;background:var(--surface);color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.chip:hover{color:var(--text)}
+.chip.on{background:var(--sage-dim);color:var(--sage);border-color:rgba(122,156,126,0.3)}
+
+.groups{display:flex;flex-direction:column;gap:36px}
+.group h2{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+.group h2 em{color:var(--sage);font-style:italic}
+.group .sub{color:var(--muted);font-size:13px;font-family:var(--mono);letter-spacing:0.06em;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+
+.card{
+  background:var(--deep);border:1px solid var(--line);border-radius:12px;
+  padding:18px 20px;transition:all .2s;
+  display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;
+}
+.card:hover{border-color:var(--line2);transform:translateY(-1px)}
+.card.yes{border-color:rgba(122,156,126,0.25)}
+.card.no{opacity:0.6}
+.card.testing{border-color:var(--amber)}
+.card .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.card .name{font-family:var(--serif);font-size:19px;color:var(--text);line-height:1.2;font-style:italic}
+.card .status{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;padding-top:4px}
+.card.yes .status{color:var(--sage)}
+.card.no .status{color:var(--dim)}
+.card.testing .status{color:var(--amber)}
+.card .desc{color:var(--muted);font-size:13px;line-height:1.55;flex:1}
+.card .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+.card .api{color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:0.06em}
+.card .test-btn{background:transparent;color:var(--sage);border:1px solid rgba(122,156,126,0.3);padding:5px 12px;border-radius:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase}
+.card .test-btn:hover{background:var(--sage-dim)}
+.card .test-btn:disabled{opacity:0.4;cursor:not-allowed}
+.card .result{color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 10px;background:var(--surface);border-radius:6px;margin-top:4px;word-break:break-word;line-height:1.5}
+.card .result.ok{color:var(--sage);background:var(--sage-dim)}
+.card .result.err{color:var(--coral);background:rgba(214,122,90,0.08)}
+
+.footer{margin-top:56px;padding-top:28px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center;line-height:1.7}
+.footer p{margin-bottom:6px}
+.footer .co{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--dim)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--deep);border:1px solid var(--sage);color:var(--text);padding:12px 20px;border-radius:8px;font-family:var(--mono);font-size:12px;letter-spacing:0.08em;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="glyph">&#9675;</span>
+    <span>Hello Device</span>
+    <span class="co">AI-Native Solutions</span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="rerunBtn">Run all tests</button>
+    <button class="btn primary" id="exportBtn">Export report</button>
+  </div>
+</header>
+
+<main>
+  <section class="intro">
+    <h1>Hello, <em>device</em>.</h1>
+    <p class="lede">A first-contact handshake between this page and every capability your browser silently offers.</p>
+    <p>Every card below is one thing modern browsers can do. Green means your browser has it. Grey means it doesn't. Nothing on this page leaves your device &mdash; the checks run locally and the report is generated in memory. Click a card's test button to try the capability live.</p>
+  </section>
+
+  <section class="summary" id="summary">
+    <div class="big">
+      <span id="countAvail">&mdash;</span><span class="of">/</span><span class="tot" id="countTotal">&mdash;</span>
+    </div>
+    <div class="desc">
+      <h3>Capabilities available</h3>
+      <p id="summaryText">Checking your browser&hellip;</p>
+    </div>
+    <div class="filters">
+      <button class="chip on" data-filter="all">All</button>
+      <button class="chip" data-filter="yes">Available</button>
+      <button class="chip" data-filter="no">Missing</button>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+  </section>
+
+  <div class="groups" id="groups"></div>
+
+  <footer class="footer">
+    <p>One HTML file. Vanilla JavaScript. No trackers, no analytics, no network calls.</p>
+    <p>Open source under the MIT licence &middot; <a href="https://github.com/sjgant80-hub/hello-device">source on GitHub</a></p>
+    <p class="co">AI-Native Solutions &middot; ai-nativesolutions.com</p>
+  </footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* Capability catalogue — grouped into seven ordinary categories.
+   Each entry: id, name, api, desc, group, check() -> bool, optional test() -> Promise<string>. */
+
+const CAPS = [
+
+  // SENSE
+  { id:'geo', group:'sense', name:'Location', api:'navigator.geolocation',
+    desc:"Your device's rough or precise position, with permission.",
+    check:()=>'geolocation' in navigator,
+    test:()=>new Promise((res,rej)=>{
+      if(!('geolocation' in navigator)) return rej('not supported');
+      navigator.geolocation.getCurrentPosition(
+        p=>res('lat '+p.coords.latitude.toFixed(2)+', lon '+p.coords.longitude.toFixed(2)+' (±'+Math.round(p.coords.accuracy)+'m)'),
+        e=>rej(e.message||'denied'),
+        {timeout:8000}
+      );
+    })
+  },
+  { id:'camera', group:'sense', name:'Camera', api:'getUserMedia video',
+    desc:"Reads video frames from your webcam, with permission.",
+    check:()=>!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    test:async()=>{
+      const s=await navigator.mediaDevices.getUserMedia({video:true});
+      const t=s.getVideoTracks()[0]; const st=t.getSettings();
+      s.getTracks().forEach(x=>x.stop());
+      return (t.label||'camera')+' · '+(st.width||'?')+'×'+(st.height||'?');
+    }
+  },
+  { id:'mic', group:'sense', name:'Microphone', api:'getUserMedia audio',
+    desc:"Captures live audio from your microphone, with permission.",
+    check:()=>!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    test:async()=>{
+      const s=await navigator.mediaDevices.getUserMedia({audio:true});
+      const t=s.getAudioTracks()[0]; s.getTracks().forEach(x=>x.stop());
+      return 'active · '+(t.label||'default microphone');
+    }
+  },
+  { id:'ambient', group:'sense', name:'Ambient light', api:'AmbientLightSensor',
+    desc:"Measures how bright the room around you is.",
+    check:()=>'AmbientLightSensor' in window
+  },
+  { id:'orient', group:'sense', name:'Motion & orientation', api:'DeviceOrientationEvent',
+    desc:"How the device is being tilted and moved.",
+    check:()=>'DeviceOrientationEvent' in window,
+    test:()=>new Promise((res,rej)=>{
+      const t=setTimeout(()=>rej('no readings in 3s'),3000);
+      const h=e=>{clearTimeout(t);window.removeEventListener('deviceorientation',h);
+        res(e.alpha!==null?'α '+Math.round(e.alpha)+'° β '+Math.round(e.beta)+'° γ '+Math.round(e.gamma)+'°':'event fires but readings null');};
+      window.addEventListener('deviceorientation',h);
+    })
+  },
+  { id:'idle', group:'sense', name:'Idle detection', api:'IdleDetector',
+    desc:"Notices when you stop touching mouse and keyboard.",
+    check:()=>'IdleDetector' in window
+  },
+
+  // MOTOR
+  { id:'bt', group:'motor', name:'Bluetooth', api:'navigator.bluetooth',
+    desc:"Talks directly to nearby Bluetooth devices.",
+    check:()=>'bluetooth' in navigator
+  },
+  { id:'usb', group:'motor', name:'USB', api:'navigator.usb',
+    desc:"Connects to USB peripherals plugged into your device.",
+    check:()=>'usb' in navigator
+  },
+  { id:'serial', group:'motor', name:'Serial ports', api:'navigator.serial',
+    desc:"Reads and writes serial-port data — Arduino, sensors, kit.",
+    check:()=>'serial' in navigator
+  },
+  { id:'hid', group:'motor', name:'HID devices', api:'navigator.hid',
+    desc:"Talks to game controllers, keypads, and custom HID gear.",
+    check:()=>'hid' in navigator
+  },
+  { id:'nfc', group:'motor', name:'NFC tags', api:'NDEFReader',
+    desc:"Reads NFC tags when you tap your phone against them.",
+    check:()=>'NDEFReader' in window
+  },
+  { id:'vibrate', group:'motor', name:'Vibration', api:'navigator.vibrate',
+    desc:"Buzzes the device to get your attention.",
+    check:()=>'vibrate' in navigator,
+    test:async()=>{ navigator.vibrate([80,40,80]); return 'buzz sent (may not fire on desktop)'; }
+  },
+
+  // STORE
+  { id:'idb', group:'store', name:'IndexedDB', api:'window.indexedDB',
+    desc:"A structured database that lives in the browser.",
+    check:()=>'indexedDB' in window,
+    test:()=>new Promise((res,rej)=>{
+      const r=indexedDB.open('hello-device-probe',1);
+      r.onsuccess=()=>{r.result.close();indexedDB.deleteDatabase('hello-device-probe');res('open + close succeeded');};
+      r.onerror=()=>rej(r.error?r.error.message:'blocked');
+    })
+  },
+  { id:'localstorage', group:'store', name:'Local storage', api:'window.localStorage',
+    desc:"Simple key-value storage that persists across visits.",
+    check:()=>{try{localStorage.setItem('_hd','_hd');localStorage.removeItem('_hd');return true;}catch(e){return false;}}
+  },
+  { id:'cache', group:'store', name:'Cache storage', api:'caches',
+    desc:"Stores fetched files for offline use.",
+    check:()=>'caches' in window
+  },
+  { id:'fsaccess', group:'store', name:'File system access', api:'showOpenFilePicker',
+    desc:"Reads and writes real files and folders on your disk.",
+    check:()=>'showOpenFilePicker' in window
+  },
+  { id:'persist', group:'store', name:'Persistent storage', api:'navigator.storage',
+    desc:"Asks the browser not to evict your data under pressure.",
+    check:()=>!!(navigator.storage && navigator.storage.persist),
+    test:async()=>{
+      const est=await navigator.storage.estimate();
+      const used=Math.round((est.usage||0)/1024);
+      const quota=Math.round((est.quota||0)/1024/1024);
+      return used+' KB used of ~'+quota+' MB quota';
+    }
+  },
+
+  // LINK
+  { id:'ws', group:'link', name:'WebSocket', api:'WebSocket',
+    desc:"A persistent two-way connection to a server.",
+    check:()=>'WebSocket' in window
+  },
+  { id:'wt', group:'link', name:'WebTransport', api:'WebTransport',
+    desc:"Fast, low-latency streaming over HTTP/3.",
+    check:()=>'WebTransport' in window
+  },
+  { id:'rtc', group:'link', name:'WebRTC peer-to-peer', api:'RTCPeerConnection',
+    desc:"Direct connections between two browsers without a server in the middle.",
+    check:()=>'RTCPeerConnection' in window
+  },
+  { id:'bc', group:'link', name:'Broadcast channel', api:'BroadcastChannel',
+    desc:"Sends messages between tabs of the same site.",
+    check:()=>'BroadcastChannel' in window,
+    test:()=>new Promise((res)=>{
+      const bc=new BroadcastChannel('_hd');
+      const t=setTimeout(()=>{bc.close();res('channel open (no echo in single tab)');},600);
+      bc.onmessage=e=>{clearTimeout(t);bc.close();res('echo received: '+e.data);};
+      bc.postMessage('ping');
+    })
+  },
+  { id:'fetch', group:'link', name:'Fetch', api:'window.fetch',
+    desc:"The modern way to request things from the network.",
+    check:()=>'fetch' in window
+  },
+
+  // COMPUTE
+  { id:'webgpu', group:'compute', name:'WebGPU', api:'navigator.gpu',
+    desc:"Direct access to the graphics card for rendering and machine learning.",
+    check:()=>'gpu' in navigator,
+    test:async()=>{
+      const a=await navigator.gpu.requestAdapter();
+      if(!a) return 'no adapter available';
+      const info=a.info||{};
+      return ('adapter · '+(info.vendor||'?')+' '+(info.architecture||'')).trim();
+    }
+  },
+  { id:'wasm', group:'compute', name:'WebAssembly', api:'WebAssembly',
+    desc:"Runs near-native-speed code in the browser.",
+    check:()=>'WebAssembly' in window
+  },
+  { id:'workers', group:'compute', name:'Web workers', api:'Worker',
+    desc:"Runs scripts on background threads without freezing the page.",
+    check:()=>'Worker' in window
+  },
+  { id:'sw', group:'compute', name:'Service worker', api:'navigator.serviceWorker',
+    desc:"A background script that stays alive and enables offline use.",
+    check:()=>'serviceWorker' in navigator
+  },
+  { id:'xr', group:'compute', name:'WebXR', api:'navigator.xr',
+    desc:"Virtual reality and augmented reality inside the browser.",
+    check:()=>'xr' in navigator,
+    test:async()=>{
+      const ok=await navigator.xr.isSessionSupported('immersive-vr').catch(()=>false);
+      return ok?'VR session supported':'API present, no VR session';
+    }
+  },
+  { id:'crypto', group:'compute', name:'Web Crypto', api:'crypto.subtle',
+    desc:"Real cryptography — keys, signatures, hashes — in the browser.",
+    check:()=>!!(window.crypto && window.crypto.subtle),
+    test:async()=>{
+      const k=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']).catch(()=>null)
+            ||await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+      return 'key generated · '+k.privateKey.algorithm.name;
+    }
+  },
+
+  // EXPRESS
+  { id:'audio', group:'express', name:'Web Audio', api:'AudioContext',
+    desc:"Generates and processes sound with fine control.",
+    check:()=>'AudioContext' in window || 'webkitAudioContext' in window,
+    test:async()=>{
+      const AC=window.AudioContext||window.webkitAudioContext;
+      const c=new AC();
+      const o=c.createOscillator(); const g=c.createGain();
+      g.gain.value=0.05; o.frequency.value=440;
+      o.connect(g); g.connect(c.destination);
+      o.start(); await new Promise(r=>setTimeout(r,180)); o.stop();
+      setTimeout(()=>c.close(),300);
+      return 'played 440 Hz tone briefly';
+    }
+  },
+  { id:'speech', group:'express', name:'Speech synthesis', api:'speechSynthesis',
+    desc:"Reads text out loud in a chosen voice.",
+    check:()=>'speechSynthesis' in window,
+    test:async()=>{
+      const u=new SpeechSynthesisUtterance('hello device'); u.volume=0.6;
+      speechSynthesis.speak(u);
+      const n=speechSynthesis.getVoices().length;
+      return n+' voice'+(n===1?'':'s')+' installed';
+    }
+  },
+  { id:'speechrec', group:'express', name:'Speech recognition', api:'SpeechRecognition',
+    desc:"Turns spoken words into text.",
+    check:()=>'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
+  },
+  { id:'midi', group:'express', name:'Web MIDI', api:'requestMIDIAccess',
+    desc:"Talks to MIDI keyboards, drum pads, and synths.",
+    check:()=>'requestMIDIAccess' in navigator
+  },
+  { id:'notify', group:'express', name:'Notifications', api:'Notification',
+    desc:"Shows system-level pop-ups even when the tab isn't focused.",
+    check:()=>'Notification' in window,
+    test:async()=>{
+      const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();
+      return 'permission: '+p;
+    }
+  },
+  { id:'clip', group:'express', name:'Clipboard', api:'navigator.clipboard',
+    desc:"Reads from and writes to the system clipboard.",
+    check:()=>!!(navigator.clipboard && navigator.clipboard.writeText),
+    test:async()=>{ await navigator.clipboard.writeText('hello-device says hi'); return 'wrote to clipboard'; }
+  },
+  { id:'share', group:'express', name:'Share', api:'navigator.share',
+    desc:"Passes a link, file, or text to another app on your device.",
+    check:()=>'share' in navigator
+  },
+  { id:'wake', group:'express', name:'Wake lock', api:'navigator.wakeLock',
+    desc:"Keeps the screen from going to sleep while something matters.",
+    check:()=>'wakeLock' in navigator,
+    test:async()=>{
+      const w=await navigator.wakeLock.request('screen');
+      setTimeout(()=>w.release(),1500);
+      return 'held screen wake lock for 1.5s';
+    }
+  },
+
+  // DREAM
+  { id:'battery', group:'dream', name:'Battery status', api:'navigator.getBattery',
+    desc:"Reports charge level and whether the device is plugged in.",
+    check:()=>'getBattery' in navigator,
+    test:async()=>{
+      const b=await navigator.getBattery();
+      return Math.round(b.level*100)+'% · '+(b.charging?'charging':'on battery');
+    }
+  },
+  { id:'net', group:'dream', name:'Network info', api:'navigator.connection',
+    desc:"Reports the rough type of connection (wifi, 4G, offline).",
+    check:()=>'connection' in navigator,
+    test:async()=>{
+      const c=navigator.connection;
+      return (c.effectiveType||'?')+' · ~'+(c.downlink||'?')+' Mbps · rtt '+(c.rtt||'?')+' ms';
+    }
+  },
+  { id:'push', group:'dream', name:'Push messages', api:'PushManager',
+    desc:"Receives messages from a server even when the tab is closed.",
+    check:()=>'PushManager' in window
+  },
+  { id:'bgsync', group:'dream', name:'Background sync', api:'SyncManager',
+    desc:"Retries work when a lost network connection comes back.",
+    check:()=>'SyncManager' in window
+  },
+  { id:'pay', group:'dream', name:'Payment request', api:'PaymentRequest',
+    desc:"A standard checkout sheet for cards and wallets.",
+    check:()=>'PaymentRequest' in window
+  },
+  { id:'contact', group:'dream', name:'Contact picker', api:'navigator.contacts',
+    desc:"Lets you pick contacts from your phone with permission.",
+    check:()=>'contacts' in navigator && 'ContactsManager' in window
+  },
+  { id:'present', group:'dream', name:'Presentation', api:'navigator.presentation',
+    desc:"Mirrors or streams the page to a nearby display.",
+    check:()=>'presentation' in navigator
+  },
+  { id:'creds', group:'dream', name:'Credential store', api:'navigator.credentials',
+    desc:"Stores passkeys and passwords with the browser.",
+    check:()=>'credentials' in navigator
+  }
+];
+
+const GROUPS = [
+  { id:'sense',   name:'Sense',   sub:'What the device can perceive' },
+  { id:'motor',   name:'Motor',   sub:'What the device can act on the world with' },
+  { id:'store',   name:'Store',   sub:'Where the device keeps things' },
+  { id:'link',    name:'Link',    sub:'How the device reaches other devices' },
+  { id:'compute', name:'Compute', sub:'The raw power the device brings to bear' },
+  { id:'express', name:'Express', sub:'How the device speaks back to you' },
+  { id:'dream',   name:'Dream',   sub:'The quieter, background things a device can do' }
+];
+
+const state = { results: {}, filter: 'all' };
+
+function el(tag, attrs){
+  const n=document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k==='class') n.className=attrs[k];
+    else if(k.startsWith('on')) n[k.toLowerCase()]=attrs[k];
+    else if(k==='data') for(const dk in attrs.data) n.dataset[dk]=attrs.data[dk];
+    else if(k==='text') n.textContent=attrs[k];
+    else n.setAttribute(k, attrs[k]);
+  }
+  for(let i=2;i<arguments.length;i++){
+    const c=arguments[i];
+    if(c==null) continue;
+    n.appendChild(typeof c==='string'?document.createTextNode(c):c);
+  }
+  return n;
+}
+
+function renderCard(cap){
+  const r = state.results[cap.id] || { available:false };
+  const cls = r.testing ? 'testing' : (r.available ? 'yes' : 'no');
+  const statusText = r.testing ? 'testing…' : (r.available ? '✓ available' : '— not in this browser');
+
+  const card = el('div',{class:'card '+cls, data:{id:cap.id, avail:r.available?'1':'0'}},
+    el('div',{class:'head'},
+      el('div',{class:'name', text:cap.name}),
+      el('div',{class:'status', text:statusText})
+    ),
+    el('div',{class:'desc', text:cap.desc})
+  );
+
+  if(r.testResult){
+    card.appendChild(el('div',{class:'result ok', text:r.testResult}));
+  }else if(r.testError){
+    card.appendChild(el('div',{class:'result err', text:r.testError}));
+  }
+
+  const testable = cap.test && r.available;
+  const foot = el('div',{class:'foot'},
+    el('div',{class:'api', text:cap.api}),
+    testable
+      ? el('button',{class:'test-btn', onclick:()=>runTest(cap.id), text: r.testing?'…':'Try it'})
+      : el('span',{class:'api', text:''})
+  );
+  card.appendChild(foot);
+  return card;
+}
+
+function renderGroups(){
+  const root = document.getElementById('groups');
+  root.innerHTML = '';
+  for(const g of GROUPS){
+    const caps = CAPS.filter(c=>c.group===g.id).filter(c=>{
+      if(state.filter==='all') return true;
+      const r=state.results[c.id]; if(!r) return false;
+      return state.filter==='yes' ? r.available : !r.available;
+    });
+    if(!caps.length) continue;
+    const grid = el('div',{class:'grid'});
+    caps.forEach(c=>grid.appendChild(renderCard(c)));
+    const sec = el('section',{class:'group'},
+      el('h2', null, el('em', {text:g.name})),
+      el('div',{class:'sub', text:g.sub}),
+      grid
+    );
+    root.appendChild(sec);
+  }
+}
+
+function renderSummary(){
+  const total = CAPS.length;
+  const avail = CAPS.filter(c=>state.results[c.id] && state.results[c.id].available).length;
+  document.getElementById('countAvail').textContent = avail;
+  document.getElementById('countTotal').textContent = total;
+  document.getElementById('bar').style.width = Math.round(avail/total*100)+'%';
+  const pct = Math.round(avail/total*100);
+  let mood = 'a lean set';
+  if(pct>=80) mood='a very rich set';
+  else if(pct>=60) mood='a healthy set';
+  else if(pct>=40) mood='a modest set';
+  document.getElementById('summaryText').textContent =
+    'Your browser exposes '+mood+' of the modern web platform ('+pct+'% of '+total+' checked).';
+}
+
+function probeAll(){
+  for(const c of CAPS){
+    let ok=false;
+    try{ ok = !!c.check(); }catch(e){ ok=false; }
+    state.results[c.id] = { available: ok };
+  }
+}
+
+async function runTest(id){
+  const cap = CAPS.find(c=>c.id===id);
+  if(!cap || !cap.test) return;
+  state.results[id] = Object.assign({}, state.results[id], { testing:true, testResult:null, testError:null });
+  renderGroups();
+  try{
+    const out = await cap.test();
+    state.results[id] = Object.assign({}, state.results[id], { testing:false, testResult: out||'ok' });
+    toast(cap.name+' · ok');
+  }catch(e){
+    const msg = (e && (e.message || e.toString())) || 'failed';
+    state.results[id] = Object.assign({}, state.results[id], { testing:false, testError: msg });
+    toast(cap.name+' · '+msg);
+  }
+  renderGroups();
+}
+
+async function runAllTests(){
+  toast('Running all tests…');
+  for(const c of CAPS){
+    if(!c.test) continue;
+    if(!state.results[c.id] || !state.results[c.id].available) continue;
+    if(['camera','mic','geo','notify'].indexOf(c.id)>=0) continue;
+    await runTest(c.id).catch(()=>{});
+  }
+  toast('All tests done');
+}
+
+function buildReport(){
+  const now = new Date().toISOString();
+  return {
+    tool: 'Hello Device',
+    publisher: 'AI-Native Solutions',
+    url: location.href,
+    generated: now,
+    userAgent: navigator.userAgent,
+    platform: navigator.platform || null,
+    language: navigator.language,
+    languages: navigator.languages || [],
+    hardwareConcurrency: navigator.hardwareConcurrency || null,
+    deviceMemoryGB: navigator.deviceMemory || null,
+    screen: { w: screen.width, h: screen.height, dpr: window.devicePixelRatio },
+    summary: {
+      totalChecked: CAPS.length,
+      available: CAPS.filter(c=>state.results[c.id] && state.results[c.id].available).length
+    },
+    capabilities: CAPS.map(c=>({
+      id:c.id, name:c.name, group:c.group, api:c.api, description:c.desc,
+      available: !!(state.results[c.id] && state.results[c.id].available),
+      testResult: state.results[c.id] ? state.results[c.id].testResult || null : null,
+      testError:  state.results[c.id] ? state.results[c.id].testError  || null : null
+    }))
+  };
+}
+
+function downloadReport(){
+  const blob = new Blob([JSON.stringify(buildReport(), null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'hello-device-report-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  toast('Report downloaded');
+}
+
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('on'), 2400);
+}
+
+function boot(){
+  probeAll();
+  renderSummary();
+  renderGroups();
+
+  document.getElementById('exportBtn').addEventListener('click', downloadReport);
+  document.getElementById('rerunBtn').addEventListener('click', runAllTests);
+
+  document.querySelectorAll('.chip').forEach(ch=>{
+    ch.addEventListener('click', ()=>{
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+      ch.classList.add('on');
+      state.filter = ch.dataset.filter;
+      renderGroups();
+    });
+  });
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+
+boot();
+</script>
+
+</body>
+</html>
